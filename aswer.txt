@@ -66,3 +66,297 @@ public class Main {
         }
     }
 }
+
+2、N进制减法 
+实现一个基于字符串的N机制的减法。 
+需要对输入的两个字符串按照给定的N进制进行减法操作，输出正负符号和表示结果的字符串。
+
+输入描述:
+输入：三个参数。
+第一个参数是整数形式的进制N值，N值范围为大于等于2、小于等于35。
+第二个参数为被减数字符串；
+第三个参数为减数字符串。有效的字符包括0~9以及小写字母a~z，字符串有效字符个数最大为100个字符，另外还有结尾的\0。
+限制：
+输入的被减数和减数，除了单独的0以外，不能是以0开头的字符串。 
+如果输入有异常或计算过程中有异常，此时应当输出-1表示错误。 
+输出描述:
+输出：2个。
+其一为减法计算的结果，-1表示出错，0表示结果为整数，1表示结果为负数。
+其二为表示结果的字符串。
+
+示例1:
+输入
+2 11 1
+输出
+0 10
+说明
+按二进制计算 11 -1 ，计算正常，0表示符号为正数，结果为10
+
+示例2:
+输入
+8 07 1
+输出
+-1
+说明
+按8进制，检查到减数不符合非0前导的要求，返回结果为-1，没有其他结果内容。
+
+答案：
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.TreeSet;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String input = sc.nextLine();
+        Integer request = Integer.parseInt(sc.nextLine());
+        sc.close();
+        TreeSet<Integer> set = new TreeSet<>();
+        for (String str : input.split(",")) {
+            if (str.contains("-")) {
+                String[] split = str.split("-");
+                int start = Integer.parseInt(split[0]);
+                int end = Integer.parseInt(split[1]);
+                for (int i = start; i <= end; i++) {
+                    set.add(i);
+                }
+            } else {
+                set.add(Integer.parseInt(str));
+            }
+        }
+        set.remove(request);
+
+        ArrayList<Integer> list = new ArrayList<>(set);
+        StringBuilder sb = new StringBuilder();
+
+        Integer start = list.get(0);
+        Integer last = start;
+        for (int i = 1; i < list.size(); i++) {
+            Integer cur = list.get(i);
+            if (cur == last + 1) {
+                last = cur;
+            } else {
+                append(sb, start, last);
+                start = last = cur;
+            }
+        }
+        append(sb, start, last);
+        System.out.println(sb.substring(0, sb.length() - 1));
+    }
+
+    private static void append(StringBuilder sb, Integer start, Integer last) {
+        if (start.equals(last)) {
+            sb.append(last).append(",");
+        } else {
+            sb.append(start).append("-").append(last).append(",");
+        }
+    }
+}
+
+3、TLV解码
+TLV编码是按[Tag Length Value]格式进行编码的，一段码流中的信元用Tag标识，Tag在码流中唯一不重复，Length表示信元Value的长度，Value表示信元的值。
+码流以某信元的Tag开头，Tag固定占一个字节，Length固定占两个字节，字节序为小端序。
+现给定TLV格式编码的码流，以及需要解码的信元Tag，请输出该信元的Value。
+输入码流的16机制字符中，不包括小写字母，且要求输出的16进制字符串中也不要包含小写字母；码流字符串的最大长度不超过50000个字节。
+
+输入描述:
+输入的第一行为一个字符串，表示待解码信元的Tag；
+输入的第二行为一个字符串，表示待解码的16进制码流，字节之间用空格分隔。
+输出描述:
+输出一个字符串，表示待解码信元以16进制表示的Value。
+
+示例1：
+输入
+31
+32 01 00 AE 90 02 00 01 02 30 03 00 AB 32 31 31 02 00 32 33 33 01 00 CC
+输出
+32 33
+说明
+需要解析的信元的Tag是31，从码流的起始处开始匹配，Tag为32的信元长度为1（01 00，小端序表示为1）；第二个信元的Tag是90，其长度为2；第三个信元的Tag是30，其长度为3；第四个信元的Tag是31，其长度为2（02 00），所以返回长度后面的两个字节即可，即32 33。
+
+答案：
+解法一：
+import java.util.Scanner;
+
+public class Main {
+	public static void main(String[] args) {
+		Scanner in = new Scanner(System.in);
+		while (in.hasNextLine()) {// 注意，如果输入是多个测试用例，请通过while循环处理多个测试用例
+			String key=in.nextLine();
+			String[] arr=in.nextLine().replaceAll("[a-z]", "").split("[ ]");
+			String tag="";
+			int length;
+			String value="";
+			for(int i=0;i<arr.length;) {
+				tag="";
+				length=0;
+				value="";
+				tag=arr[i];
+				length=Integer.valueOf(arr[i+2]+arr[i+1], 16);
+				for(int j=1;j<=length;j++) {
+					value+=arr[i+2+j]+" ";
+				}
+				if(key.equals(tag)) {
+					System.out.println(value.trim());
+				}
+//				System.out.println(tag+" "+length+" "+value.trim());
+				i=i+2+length+1;
+			}
+		}
+		
+		
+		
+	
+	}
+}
+
+4、VLAN资源池 
+VLAN是一种对局域网设备进行逻辑划分的技术，为了标识不同的VLAN，引入VLAN ID(1-4094之间的整数)的概念。定义一个VLAN ID的资源池(下称VLAN资源池)，资源池中连续的VLAN用开始VLAN-结束VLAN表示，不连续的用单个整数表示，所有的VLAN用英文逗号连接起来。现在有一个VLAN资源池，业务需要从资源池中申请一个VLAN，需要你输出从VLAN资源池中移除申请的VLAN后的资源池。
+
+输入描述:
+第一行为字符串格式的VLAN资源池，第二行为业务要申请的VLAN，VLAN的取值范围为[1,4094]之间的整数。
+输出描述:
+从输入VLAN资源池中移除申请的VLAN后字符串格式的VLAN资源池，输出要求满足题目描述中的格式，并且按照VLAN从小到大升序输出。
+如果申请的VLAN不在原VLAN资源池内，输出原VLAN资源池升序排序后的字符串即可。
+
+示例1：
+输入
+1-5
+2
+输出
+1,3-5
+说明
+原VLAN资源池中有VLAN 1、2、3、4、5，从资源池中移除2后，剩下VLAN 1、3、4、5，按照题目描述格式并升序后的结果为1,3-5。
+
+示例2：
+输入
+20-21,15,18,30,5-10
+15
+输出
+5-10,18,20-21,30
+说明
+原VLAN资源池中有VLAN 5、6、7、8、9、10、15、18、20、21、30，从资源池中移除15后，资源池中剩下的VLAN为  5、6、7、8、9、10、18、20、21、30，按照题目描述格式并升序后的结果为5-10,18,20-21,30。
+
+示例3：
+输入
+5,1-3
+10
+输出
+1-3,5
+说明
+原VLAN资源池中有VLAN 1、2、3，5，申请的VLAN 10不在原资源池中，将原资源池按照题目描述格式并按升序排序后输出的结果为1-3,5。
+备注:
+输入VLAN资源池中VLAN的数量取值范围为[2-4094]间的整数，资源池中VLAN不重复且合法([1,4094]之间的整数)，输入是乱序的。
+
+答案：
+解法一：
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+ 
+public class Main {
+    public static void main(String[] args) {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String str = null;
+        int[] vlan = new int[4094];
+        try {
+            str = br.readLine();
+            int num = Integer.parseInt(br.readLine());
+            String[] split = str.split(",");
+            for (String s : split) {
+                try {
+                    int index = Integer.parseInt(s);
+                    if (index == num) continue;
+                    vlan[index] = 1;
+                } catch (NumberFormatException exception) {
+                    if (s.contains("-")) {
+                        String[] s_s = s.split("-");
+                        int first = Integer.parseInt(s_s[0]);
+                        int end = Integer.parseInt(s_s[1]);
+                        for (int i = first; i <= end; i++) {
+                            if (num != i) {
+                                vlan[i] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            StringBuilder result = new StringBuilder();
+            for (int i = 1; i < vlan.length; i++) {
+                if (vlan[i] == 1) {
+                    result.append(",");
+                    result.append(i);
+                    if (++i < vlan.length && vlan[i] == 1) {
+                        result.append("-");
+                        while (vlan[++i] == 1) {
+ 
+                        }
+                        result.append(i - 1);
+                    }
+                }
+            }
+            String resultStr = result.toString();
+            if (result.indexOf(",") == 0) {
+                resultStr = resultStr.substring(1);
+            }
+            System.out.println(resultStr);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+ 
+}
+
+解法二：
+import java.util.*;
+ 
+public class Main {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        String s = in.nextLine();
+        String[] array = s.split(",");
+        Set<Integer> set = new HashSet();
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].length() == 0) {
+                continue;
+            }
+            String[] tempArray = array[i].split("-");
+            if (tempArray.length == 2) {
+                for (int j = Integer.valueOf(tempArray[0]); j <= Integer.valueOf(tempArray[1]); j++) {
+                    set.add(j);
+                }
+            }else{
+                set.add(Integer.valueOf(tempArray[0]));
+            }
+        }
+        String filter = in.nextLine();
+        set.remove(Integer.valueOf(filter));
+        List<Integer> list = new ArrayList(set);
+        if (list.size() == 1) {
+            System.out.println(list.get(0));
+            return;
+        }
+        Collections.sort(list);
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < list.size()-1; i++) {
+            if (list.get(i) == list.get(i + 1) - 1) {
+                result.append(","+list.get(i));
+                while (i<list.size()-1&&list.get(i) == list.get(i + 1) - 1) {
+                    i++;
+                }
+                result.append("-" + list.get(i));
+            }else{
+                result.append("," + list.get(i));
+            }
+            if (i == list.size() - 2) {
+                result.append("," + list.get(i + 1));
+            }
+        }
+        String resultString = result.toString();
+        if (resultString.length()>0&&resultString.charAt(0) == ',') {
+            resultString=resultString.substring(1);
+        }
+        System.out.println(resultString);
+    }
+}
+
